@@ -37,12 +37,18 @@ async function run() {
       const carCollection = client.db('carsDB');
       const cars = carCollection.collection('cars')
       const brandCars = carCollection.collection('brandCars')
+      const carCarts = carCollection.collection('carCarts')
 
       // const options = { ordered: true };
       // const result = await carCollection.insertMany(carBrands, options);
       // console.log(`${result.insertedCount}another documents were inserted`);
       app.get('/cars', async (req, res) => {
          const cursor = cars.find();
+         const result = await cursor.toArray();
+         res.send(result);
+      })
+      app.get('/cars/carCarts', async (req, res) => {
+         const cursor = carCarts.find();
          const result = await cursor.toArray();
          res.send(result);
       })
@@ -55,8 +61,6 @@ async function run() {
          const id = req.params.id;
          const query = {_id: new ObjectId(id)};
          const cursor = await brandCars.findOne(query);
-         // console.log(cursor);
-         // const result = await cursor.toArray();
          res.send(cursor)
       });
       app.get('/cars/brandCars/:name', async (req, res) => {
@@ -73,6 +77,29 @@ async function run() {
          const result = await brandCars.insertOne(brandCar);
          res.send(result);
       })
+      app.post('/cars/carCarts', async (req, res) => {
+         const cart = req.body;
+         // console.log(brandCar);
+         const result = await carCarts.insertOne(cart);
+         res.send(result);
+      })
+      app.put('/cars/brandCars/:id', async (req, res) => {
+         const id = req.params.id;
+         const filter = {_id: new ObjectId(id)};
+         const updatedProduct = req.body;
+         const car = {
+            $set: {
+               image: updatedProduct.image,
+               name: updatedProduct.name,
+               brandName: updatedProduct.brandName,
+               type: updatedProduct.type,
+               price: updatedProduct.price,
+               rating: updatedProduct.rating,
+            }
+         }
+         const result = await brandCars.updateOne(filter, car);
+         res.send(result);
+      });
 
       // Send a ping to confirm a successful connection
       await client.db("admin").command({ ping: 1 });
