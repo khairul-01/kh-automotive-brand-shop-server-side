@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -34,16 +34,43 @@ async function run() {
       // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
 
-      const carCollection = client.db('carsDB').collection('cars');
+      const carCollection = client.db('carsDB');
+      const cars = carCollection.collection('cars')
+      const brandCars = carCollection.collection('brandCars')
 
       // const options = { ordered: true };
       // const result = await carCollection.insertMany(carBrands, options);
       // console.log(`${result.insertedCount}another documents were inserted`);
-      app.post('/cars', async (req, res) => {
-         // const newCars = carBrands;
-         // console.log(carBrands);
-         const result = await carCollection.insertMany(carBrands);
-         console.log(`${result.insertedCount} documents were inserted`);
+      app.get('/cars', async (req, res) => {
+         const cursor = cars.find();
+         const result = await cursor.toArray();
+         res.send(result);
+      })
+      app.get('/cars/brandCars', async (req, res) => {
+         const cursor = brandCars.find();
+         const result = await cursor.toArray();
+         res.send(result);
+      });
+      app.get('/cars/brandCars/:id', async (req, res) => {
+         const id = req.params.id;
+         const query = {_id: new ObjectId(id)};
+         const cursor = await brandCars.findOne(query);
+         // console.log(cursor);
+         // const result = await cursor.toArray();
+         res.send(cursor)
+      });
+      app.get('/cars/brandCars/:name', async (req, res) => {
+         const name = req.params.name;
+         const query = { brandName: name };
+         const cursor = brandCars.find(query);
+         const result = await cursor.toArray();
+         res.send(result);
+      });
+      
+      app.post('/cars/brandCars', async (req, res) => {
+         const brandCar = req.body;
+         // console.log(brandCar);
+         const result = await brandCars.insertOne(brandCar);
          res.send(result);
       })
 
@@ -52,7 +79,7 @@ async function run() {
       console.log("Pinged your deployment. You successfully connected to MongoDB!");
    } finally {
       // Ensures that the client will close when you finish/error
-      await client.close();
+      // await client.close();
    }
 }
 run().catch(console.dir);
