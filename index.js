@@ -57,6 +57,12 @@ async function run() {
          const result = await cursor.toArray();
          res.send(result);
       });
+      // app.get('/cars/carCarts/:id', async(req, res) => {
+      //    const id = req.params.id;
+      //    const query = {_id: new ObjectId(id)};
+      //    result = await carCarts.findOne(query);
+      //    res.send(result);
+      // })
       app.get('/cars/brandCars/:id', async (req, res) => {
          const id = req.params.id;
          const query = {_id: new ObjectId(id)};
@@ -100,6 +106,14 @@ async function run() {
          const result = await brandCars.updateOne(filter, car);
          res.send(result);
       });
+
+      app.delete('/cars/carCarts/:id', async(req, res) => {
+         const id = req.params.id;
+         const query = {_id: id}
+         const result = await carCarts.deleteOne(query);
+         res.send(result);
+         console.log('deleted', id)
+       })
 
       // Send a ping to confirm a successful connection
       await client.db("admin").command({ ping: 1 });
